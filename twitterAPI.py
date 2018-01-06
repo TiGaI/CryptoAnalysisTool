@@ -2,15 +2,16 @@ import re
 import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
+from secret_settings import *
  
 class TwitterClient(object):
     def __init__(self):
 
         # keys and tokens from the Twitter Dev Console
-        consumer_key = 'E47mtmOHnS13TLvaHvYS9skYL'
-        consumer_secret = 'VihnnOsGW3FSFh0wBOS9YFBVC1wVDz2Qskx3aHls4SzmUgjeYk'
-        access_token = '849825002752954368-5u8pb5WpkK0QPukDU7QWTgq7tRc7tA6'
-        access_token_secret = 'pHNXnGp3s60bta0alCDcHkqhpkheQ06arHu0NKkjKCjB8'
+        consumer_key = CONSUMER_KEY
+        consumer_secret = CONSUMER_SECRET
+        access_token = ACCESS_TOKEN
+        access_token_secret = ACCESS_TOKEN_SECRET
  
         # attempt authentication
         try:
@@ -85,7 +86,8 @@ def main():
     # creating object of TwitterClient Class
     api = TwitterClient()
     # calling function to get tweets
-    tweets = api.get_tweets(query = 'Donald Trump', count = 200)
+    #name of the coins
+    tweets = api.get_tweets(query = "XLM" , count = 200)
  
     # picking positive tweets from tweets
     ptweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
