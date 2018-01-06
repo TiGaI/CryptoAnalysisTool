@@ -1,11 +1,12 @@
-""" Core scraper for coinmarketcap.com. """
+#! python2
 import argparse
-import db
+# import db
 import logging
 import coinmarketcap
 import sys
 import time
 import traceback
+import pandas
 
 # Parse min market cap argument
 parser = argparse.ArgumentParser(description='Scrape data from coinmarketcap into local database.')
@@ -21,9 +22,11 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s: %(message)s',
     datefmt='%m/%d/%Y %I:%M:%S %p')
+csvfile = "test.csv"
 
-# Database
-database = db.Database()
+
+# # Database
+# database = db.Database()
 
 
 def scrapeCoinList():
@@ -44,7 +47,10 @@ def scrapeMarketCap(slug, name, type):
     """Scrape market cap for the specified coin or token slug."""
     jsonDump = coinmarketcap.requestMarketCap(slug)
     result = coinmarketcap.parseMarketCap(jsonDump, slug)
-    database.batch_entry(result, name, type)
+    df = pandas.DataFrame(data=result)
+    df.to_csv(csvfile, sep=',',index=False)
+
+    # database.batch_entry(result, name, type)
     return result[-1]['market_cap_by_available_supply'] < args.min_market_cap
 
 

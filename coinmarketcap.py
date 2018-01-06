@@ -21,6 +21,7 @@ def _request(target):
     global lastReqTime
     if lastReqTime is not None and time.time() - lastReqTime < interReqTime:
         timeToSleep = random()*(interReqTime-time.time()+lastReqTime)*2
+        # timeToSleep = 1
         logging.info("Sleeping for {0} seconds before request.".format(timeToSleep))
         time.sleep(timeToSleep)
     logging.info("Issuing request for the following target: {0}".format(target))
@@ -36,11 +37,11 @@ def _request(target):
 
 def requestList(type, view):
     """Request a list of all coins or tokens."""
-    assert(type == "tokens" or type == "coins",
-        "Can only request tokens or coins")
+    #assert type == "tokens" or type == "coins"
+    assert type == "tokens" or type == "coins"
     return _request("{0}/{1}/views/{2}/".format(
         baseUrl,
-        type,
+        "coins",
         view))
 
 
@@ -98,12 +99,16 @@ def parseMarketCap(jsonDump, slug):
     for field, fieldData in rawData.iteritems():
         for row in fieldData:
             time = int(row[0]/1000)
+            #print(row[0])
+            #print('Time')
+            #print(time)
             if time not in dataIntermediate:
                 dataIntermediate[time] = dict(zip(targetFields, [None]*len(targetFields)))
             dataIntermediate[time][field] = row[1]
 
     # Generate derived data & alter format
     times = sorted(dataIntermediate.keys())
+    #print(times)
     for time in times:
         datum = dataIntermediate[time]
         datum['slug'] = slug
@@ -117,5 +122,4 @@ def parseMarketCap(jsonDump, slug):
             datum['est_available_supply'] = None
 
         data.append(datum)
-
     return data
