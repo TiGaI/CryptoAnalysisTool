@@ -12,6 +12,8 @@ import pandas
 parser = argparse.ArgumentParser(description='Scrape data from coinmarketcap into local database.')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
                    help='minimum market cap [usd] for currency to be scraped (default: scrape all)')
+parser.add_argument('date_range', metavar='min_date', type=int, nargs='?', default=100,
+                   help='Max date you want from the scrape')
 
 args = parser.parse_args()
 
@@ -36,17 +38,18 @@ def scrapeCoinList():
     return data
 
 
-def scrapeTokenList():
-    """Scrape token list."""
-    html = coinmarketcap.requestList('tokens', 'all')
-    data = coinmarketcap.parseList(html, 'assets')
-    return data
+# def scrapeTokenList():
+#     """Scrape token list."""
+#     html = coinmarketcap.requestList('tokens', 'all')
+#     data = coinmarketcap.parseList(html, 'assets')
+#     return data
 
 
 def scrapeMarketCap(slug, name, type):
     """Scrape market cap for the specified coin or token slug."""
+    print("herere", slug)
     jsonDump = coinmarketcap.requestMarketCap(slug)
-    result = coinmarketcap.parseMarketCap(jsonDump, slug)
+    result = coinmarketcap.parseMarketCap(jsonDump, slug, args.date_range)
     df = pandas.DataFrame(data=result)
     df.to_csv(csvfile, sep=',',index=False)
 
@@ -54,25 +57,26 @@ def scrapeMarketCap(slug, name, type):
     return result[-1]['market_cap_by_available_supply'] < args.min_market_cap
 
 
-logging.info("Attempting to scrape token list...")
-tokens = scrapeTokenList()
-logging.info("Finished scraping token list. Starting on tokens...")
-for token in tokens:
-    logging.info("> Starting scrape of token {0}...".format(token['slug']))
-    try:
-        if scrapeMarketCap(token['slug'], token['name'], 'token'):
-            logging.info("Minimum market cap reached. Stopped scraping tokens.")
-            break
-    except Exception as e:
-        print '-'*60
-        print "Could not scrape token {0}.".format(token['slug'])
-        print traceback.format_exc()
-        print '-'*60
-        logging.info(">> Could not scrape {0}. Skipping.".format(token['slug']))
-        continue
-logging.info("Attempting to scrape coin list...")
+# # logging.info("Attempting to scrape token list...")
+# tokens = scrapeTokenList()
+# # logging.info("Finished scraping token list. Starting on tokens...")
+# for token in tokens:
+#     # logging.info("> Starting scrape of token {0}...".format(token['slug']))
+#     try:
+#         if scrapeMarketCap(token['slug'], token['name'], 'token'):
+#             logging.info("Minimum market cap reached. Stopped scraping tokens.")
+#             break
+#     except Exception as e:
+#         print '-'*60
+#         print "Could not scrape token {0}.".format(token['slug'])
+#         print traceback.format_exc()
+#         print '-'*60
+#         logging.info(">> Could not scrape {0}. Skipping.".format(token['slug']))
+#         continue
+
+# logging.info("Attempting to scrape coin list...")
 coins = scrapeCoinList()
-logging.info("Finished scraping coin list. Starting on coins...")
+# logging.info("Finished scraping coin list. Starting on coins...")
 for coin in coins:
     logging.info("> Starting scrape of coin {0}...".format(coin['slug']))
     try:
