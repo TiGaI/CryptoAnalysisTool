@@ -1,5 +1,5 @@
 """ Module for requesting data from coinmarketcap.org and parsing it. """
-from datetime import datetime
+import datetime
 import json
 import logging
 import lxml.html
@@ -47,6 +47,7 @@ def requestList(type, view):
 
 def requestMarketCap(slug):
     """Request market cap data for a given coin slug."""
+
     return _request("{0}/currencies/{1}/".format(
         graphBaseUrl, slug))
 
@@ -88,38 +89,38 @@ def parseList(html, type):
     return data
 
 
-def parseMarketCap(jsonDump, slug):
+def parseMarketCap(jsonDump, slug, datefrom):
     """ """
     data = []
     rawData = json.loads(jsonDump)
-
+    # print("rawData.......", rawData)
     # Covert data in document to wide format
     dataIntermediate = {}
     targetFields = [str(key.replace('_data', '')) for key in rawData.keys()]
+    # print("targetFields.......", targetFields)
     for field, fieldData in rawData.iteritems():
         for row in fieldData:
             time = int(row[0]/1000)
-            #print(row[0])
-            #print('Time')
-            #print(time)
             if time not in dataIntermediate:
                 dataIntermediate[time] = dict(zip(targetFields, [None]*len(targetFields)))
             dataIntermediate[time][field] = row[1]
 
     # Generate derived data & alter format
     times = sorted(dataIntermediate.keys())
-    #print(times)
+    start_date = datetime.datetime.now() + datetime.timedelta(-datefrom)
+    
     for time in times:
-        datum = dataIntermediate[time]
-        datum['slug'] = slug
-        datum['time'] = datetime.utcfromtimestamp(time)
-
-        if (datum['market_cap_by_available_supply'] is not None
-            and datum['price_usd'] is not None
-            and datum['price_usd'] is not 0):
-            datum['est_available_supply'] = float(datum['market_cap_by_available_supply'] / datum['price_usd'])
-        else:
-            datum['est_available_supply'] = None
-
-        data.append(datum)
+        # filter date
+        # print(start_date <= datetime.datetime.utcfromtimestamp(time))
+        if start_date <= datetime.datetime.utcfromtimestamp(time):
+            datum = dataIntermediate[time]
+            datum['slug'] = slug
+            datum['time'] = datetime.utcfromtimestamp(time)
+            if (datum['market_cap_by_available_supply'] is not None
+                and datum['price_usd'] is not None
+                and datum['price_usd'] is not 0):
+                datum['est_available_supply'] = float(datum['market_cap_by_available_supply'] / datum['price_usd'])
+            else:
+                datum['est_available_supply'] = None
+            data.append(datum)
     return data
