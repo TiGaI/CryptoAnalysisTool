@@ -1,6 +1,6 @@
 #! python2
 import argparse
-# import db
+import db
 import logging
 import coinmarketcap
 import sys
@@ -27,8 +27,8 @@ logging.basicConfig(
 csvfile = "test.csv"
 
 
-# # Database
-# database = db.Database()
+Database
+database = db.Database()
 
 
 def scrapeCoinList():
@@ -50,10 +50,9 @@ def scrapeMarketCap(slug, name, type):
     print("herere", slug)
     jsonDump = coinmarketcap.requestMarketCap(slug)
     result = coinmarketcap.parseMarketCap(jsonDump, slug, args.date_range)
-    df = pandas.DataFrame(data=result)
-    df.to_csv(csvfile, sep=',',index=False)
-
-    # database.batch_entry(result, name, type)
+    # df = pandas.DataFrame(data=result)
+    # df.to_csv(csvfile, sep=',',index=False)
+    database.batch_entry(result, name, type)
     return result[-1]['market_cap_by_available_supply'] < args.min_market_cap
 
 
