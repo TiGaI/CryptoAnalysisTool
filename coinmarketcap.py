@@ -112,15 +112,15 @@ def parseMarketCap(jsonDump, slug, datefrom):
     for time in times:
         # filter date
         # print(start_date <= datetime.datetime.utcfromtimestamp(time))
-        if start_date <= datetime.datetime.utcfromtimestamp(time):
-            datum = dataIntermediate[time]
-            datum['slug'] = slug
-            datum['time'] = datetime.utcfromtimestamp(time)
-            if (datum['market_cap_by_available_supply'] is not None
-                and datum['price_usd'] is not None
-                and datum['price_usd'] is not 0):
-                datum['est_available_supply'] = float(datum['market_cap_by_available_supply'] / datum['price_usd'])
-            else:
-                datum['est_available_supply'] = None
-            data.append(datum)
+        # if start_date <= datetime.datetime.utcfromtimestamp(time):
+        datum = dataIntermediate[time]
+        datum['slug'] = slug
+        datum['time'] = datetime.utcfromtimestamp(time)
+        if (datum['market_cap_by_available_supply'] is not None
+            and datum['price_usd'] is not None
+            and datum['price_usd'] is not 0):
+            datum['est_available_supply'] = float(datum['market_cap_by_available_supply'] / datum['price_usd'])
+        else:
+            datum['est_available_supply'] = None
+        data.append(datum)
     return data
