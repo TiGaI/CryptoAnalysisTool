@@ -27,7 +27,7 @@ logging.basicConfig(
 csvfile = "test.csv"
 
 
-Database
+#Database
 database = db.Database()
 
 
@@ -83,11 +83,11 @@ for coin in coins:
             logging.info("Minimum market cap reached. Stopped scraping coins.")
             break
     except Exception as e:
-        print '-'*60
-        print "Could not scrape coin {0}.".format(coin['slug'])
-        print traceback.format_exc()
-        print '-'*60
-        logging.info(">> Could not scrape {0}. Skipping.".format(coin['slug']))
+        # print '-'*60
+        # print "Could not scrape coin {0}.".format(coin['slug'])
+        # print traceback.format_exc()
+        # print '-'*60
+        # logging.info(">> Could not scrape {0}. Skipping.".format(coin['slug']))
         continue
 logging.info("Finished scraping tokens and coins. All done.")
 logging.info("Made {0} requests in total.".format(coinmarketcap.countRequested))
