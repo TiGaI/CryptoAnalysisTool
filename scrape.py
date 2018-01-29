@@ -38,12 +38,11 @@ def scrapeCoinList():
 
 def scrapeMarketCap(slug, name, type):
     """Scrape market cap for the specified coin or token slug."""
-    print("herere", slug)
     jsonDump = coinmarketcap.requestMarketCap(slug)
     result = coinmarketcap.parseMarketCap(jsonDump, slug, args.date_range)
     df = pandas.DataFrame(data=result)
     df.to_csv(csvfile, sep=',',index=False)
-    # database.batch_entry(result, name, type)
+    database.batch_entry(result, name, type)
     return result[-1]['market_cap_by_available_supply'] < args.min_market_cap
 
 coins = scrapeCoinList()

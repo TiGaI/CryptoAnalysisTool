@@ -93,11 +93,8 @@ def parseMarketCap(jsonDump, slug, datefrom):
     """ """
     data = []
     rawData = json.loads(jsonDump)
-    # print("rawData.......", rawData)
-    # Covert data in document to wide format
     dataIntermediate = {}
     targetFields = [str(key.replace('_data', '')) for key in rawData.keys()]
-    # print("targetFields.......", targetFields)
     for field, fieldData in rawData.iteritems():
         for row in fieldData:
             time = int(row[0]/1000)
