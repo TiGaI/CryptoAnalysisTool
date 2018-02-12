@@ -103,9 +103,19 @@ def technicalAnalysis(df):
     #Analysis the trendline Linear Regression
     #Compare the peaks and High highs and low lows
     #The total volumn between spikes
-    
+    #Swing Trading Points
+        #Always enter a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
+        #Always align your trade with the overall direction of the market.
+        #focus on the 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
+        #look for volume dries up at lows
+        #Don’t get caught up in the coin or company. 
+        #Use a T-Line trading strategy. -8-day exponential moving average
+        #the farther away from the T-line, the high the possible of it going back to the T-Line
+        #Rollover - happen when the price can go over the T-line, high possibility of it will drop
+        https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
 
 
+        
 def main():
     ##logging.info("Attempting to scrape token list.")
     tokens = scrapeTokenList()
