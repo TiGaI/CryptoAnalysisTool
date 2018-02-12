@@ -98,7 +98,7 @@ def getDetailandGraphData(token):
 
 # def technicalAnalysis(df):
 #     TODO LIST
-#     Filter and cutdown data Within the past 3 months
+#     1. Filter and cutdown data Within the past 3 months
 #     Analysis the trendline Linear Regression
 #     Compare the peaks and High highs and low lows
 #     The total volumn between spikes
@@ -112,6 +112,7 @@ def getDetailandGraphData(token):
 #         the farther away from the T-line, the high the possible of it going back to the T-Line
 #         Rollover - happen when the price can go over the T-line, high possibility of it will drop
 #         https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
+#         https://blog.quantopian.com/a-professional-quant-equity-workflow/
 
 
         
@@ -136,6 +137,9 @@ def main():
     #     getDetailandGraphData(token)
     #print coins
 
+def testing():
+    df = pd.read_csv('eos.csv')
+    technicalAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)
@@ -148,4 +152,5 @@ def main():
     # plt.show()
 
 if __name__=='__main__':
-    main()
+    #main()
+    testing()
