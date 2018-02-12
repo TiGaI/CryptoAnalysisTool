@@ -87,32 +87,31 @@ def LoopandFilterListData(html):
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
     rawData = pd.read_json(URL)
-    rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0])).strftime('%Y-%m-%dT%H:%M:%SZ')) #convert UNIX TIMEstamp into readable data
+    rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
     rawData['market_cap_by_available_supply'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[1])
     rawData['price_btc'] = rawData['price_btc'].apply(lambda x: x[1])
     rawData['price_platform'] = rawData['price_platform'].apply(lambda x: x[1])
     rawData['price_usd'] = rawData['price_usd'].apply(lambda x: x[1])
     rawData['volume_usd'] = rawData['volume_usd'].apply(lambda x: x[1])
-    #rawData.to_csv("{0}.csv".format(token[slug]), sep=',',index=False)
-    #print rawData
+    rawData.to_csv("{0}.csv".format(token['slug']), sep=',',index=False)
     return rawData
 
-def technicalAnalysis(df):
-    #TODO LIST
-    #Filter and cutdown data Within the past 3 months
-    #Analysis the trendline Linear Regression
-    #Compare the peaks and High highs and low lows
-    #The total volumn between spikes
-    #Swing Trading Points
-        #Always enter a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
-        #Always align your trade with the overall direction of the market.
-        #focus on the 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
-        #look for volume dries up at lows
-        #Don’t get caught up in the coin or company. 
-        #Use a T-Line trading strategy. -8-day exponential moving average
-        #the farther away from the T-line, the high the possible of it going back to the T-Line
-        #Rollover - happen when the price can go over the T-line, high possibility of it will drop
-        https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
+# def technicalAnalysis(df):
+#     TODO LIST
+#     Filter and cutdown data Within the past 3 months
+#     Analysis the trendline Linear Regression
+#     Compare the peaks and High highs and low lows
+#     The total volumn between spikes
+#     Swing Trading Points
+#         Always enter a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
+#         Always align your trade with the overall direction of the market.
+#         focus on the 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
+#         look for volume dries up at lows
+#         Dont get caught up in the coin or company. 
+#         Use a T-Line trading strategy. -8-day exponential moving average
+#         the farther away from the T-line, the high the possible of it going back to the T-Line
+#         Rollover - happen when the price can go over the T-line, high possibility of it will drop
+#         https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
 
 
         
@@ -124,9 +123,9 @@ def main():
     for token in tokens:
         logging.info("> Starting scrape of token {0}...".format(token['slug']))
         df = getDetailandGraphData(token)
-        TechnicalAnalysis(df)
+        #TechnicalAnalysis(df)
 
-    rawData.to_csv("testing2.csv", sep=',',index=False)
+    #rawData.to_csv("testing2.csv", sep=',',index=False)
     ##logging.info("Attempting to scrape coin list...")
     #coins = scrapeCoinList()
     ##logging.info("Finished scraping coin list. Starting on coins...")
@@ -136,8 +135,6 @@ def main():
 
     #     getDetailandGraphData(token)
     #print coins
-
-
 
 
 #def main():
