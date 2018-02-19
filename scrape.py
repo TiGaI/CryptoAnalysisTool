@@ -96,7 +96,22 @@ def getDetailandGraphData(token):
     rawData.to_csv("{0}.csv".format(token['slug']), sep=',',index=False)
     return rawData
 
-# def technicalAnalysis(df):
+def technicalAnalysis(df):
+      
+      #Right now this method is not that practical. but I would say it is a good start
+      #Creates a new dataframe for month that is within the past 3 month perioud
+      df3 = df[df['time'].str.contains("2017-11")] 
+      df4 = df[df['time'].str.contains("2017-12")]
+      df5 = df[df['time'].str.contains("2018-01")]
+      #creates a list containing these frames
+      frames = [df3, df4, df5]
+      #Combines the 3 dataframes into one dataframe
+      result = pd.concat(frames)
+      #Prints it for testing purpoises
+      print(result)
+
+
+       
 #     TODO LIST
 #     1. Filter and cutdown data Within the past 3 months
 #     Analysis the trendline Linear Regression
