@@ -7,3 +7,10 @@ python scrape.py 5000000000
 
 Install:
 pip install -r requirements.txt
+
+#Strategies involved:
+1. Buy and hold strategy - acting as the base alpha to other strategies
+2. 20 day SMA Strategy
+3. 8 day EMA Strategy
+4. Volumn analysis with 8 day EMA Strategy
+5. Twitter Sentiment with Volume
