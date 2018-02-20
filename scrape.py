@@ -6,8 +6,10 @@ from datetime import datetime
 from random import random
 import logging
 import pandas as pd
-import matplotlib.pyplot as plt
 import lxml.html #Faster than Beatuiful Soup
+
+import tradingStrategies as trading
+
 
 parser = argparse.ArgumentParser(description='Scraping Tokens and Coins')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
@@ -87,7 +89,8 @@ def LoopandFilterListData(html):
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
     rawData = pd.read_json(URL)
-    rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
+    #rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
+    rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[0])
     rawData['market_cap_by_available_supply'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[1])
     rawData['price_btc'] = rawData['price_btc'].apply(lambda x: x[1])
     rawData['price_platform'] = rawData['price_platform'].apply(lambda x: x[1])
@@ -96,26 +99,7 @@ def getDetailandGraphData(token):
     rawData.to_csv("{0}.csv".format(token['slug']), sep=',',index=False)
     return rawData
 
-# def technicalAnalysis(df):
-#     TODO LIST
-#     1. Filter and cutdown data Within the past 3 months
-#     Analysis the trendline Linear Regression
-#     Compare the peaks and High highs and low lows
-#     The total volumn between spikes
-#     Swing Trading Points
-#         Always enter a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
-#         Always align your trade with the overall direction of the market.
-#         focus on the 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
-#         look for volume dries up at lows
-#         Dont get caught up in the coin or company. 
-#         Use a T-Line trading strategy. -8-day exponential moving average
-#         the farther away from the T-line, the high the possible of it going back to the T-Line
-#         Rollover - happen when the price can go over the T-line, high possibility of it will drop
-#         https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
-#         https://blog.quantopian.com/a-professional-quant-equity-workflow/
-
-
-        
+     
 def main():
     ##logging.info("Attempting to scrape token list.")
     tokens = scrapeTokenList()
@@ -139,7 +123,7 @@ def main():
 
 def testing():
     df = pd.read_csv('eos.csv')
-    technicalAnalysis(df)
+    trading.technicalAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)
