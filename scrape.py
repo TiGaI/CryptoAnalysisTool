@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+import os
 import argparse
 import requests
 import time
@@ -14,8 +16,10 @@ import tradingStrategies as trading
 parser = argparse.ArgumentParser(description='Scraping Tokens and Coins')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
                    help='minimum market cap [usd] for currency to be scraped (default: scrape all)')
+parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="3M",
+                   help='Get data from the request time between the request and the current day. (default 3M) Example: 9D = 9 day from the current time. (D= Day)')
 
-args = parser.parse_args()
+args = parser.parse_args([])
 
 # Configuration
 timestamp_0 = 1367174841000
@@ -86,6 +90,31 @@ def LoopandFilterListData(html):
             data.append(datum)
     return data
 
+def filterTimeFrom(df):
+    dataString = args.max_date
+    print(dataString)
+    number = args.max_date[:len(args.max_date)-1]
+    suffix = args.max_date[-1].upper()
+    if number.isdigit(): 
+        number = int(num)
+    else:
+        logging.info("invalid max_date")
+        sys.exit()
+    if suffix.isdigit()
+        logging.info("invalid max_date")
+        sys.exit()
+
+    if suffix == "D"
+        d = datetime.timedelta(day=number)
+    else:
+        logging.info("invalid string. Please retry with Y,M,D only.")
+        sys.exit()
+
+    threeMonth = df['time'].iloc[-1] - d
+    df = df[df['time']>threeMonth]
+
+    print(df.describe())
+
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
     rawData = pd.read_json(URL)
@@ -99,7 +128,7 @@ def getDetailandGraphData(token):
     rawData.to_csv("{0}.csv".format(token['slug']), sep=',',index=False)
     return rawData
 
-     
+    
 def main():
     ##logging.info("Attempting to scrape token list.")
     tokens = scrapeTokenList()
@@ -108,6 +137,8 @@ def main():
     for token in tokens:
         logging.info("> Starting scrape of token {0}...".format(token['slug']))
         df = getDetailandGraphData(token)
+        df = filterTimeFrom(df)
+        
         #TechnicalAnalysis(df)
 
     #rawData.to_csv("testing2.csv", sep=',',index=False)
@@ -123,7 +154,9 @@ def main():
 
 def testing():
     df = pd.read_csv('eos.csv')
-    trading.technicalAnalysis(df)
+
+    filterTimeFrom(df)
+    #trading.technicalAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)
