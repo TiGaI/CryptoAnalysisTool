@@ -97,18 +97,62 @@ def getDetailandGraphData(token):
     return rawData
 
 def technicalAnalysis(df):
+      # print(datetime.now())
+      # print(datetime.now().month)
+
+      #Variable currmonth is equal to the current month
+      currmonth = datetime.now().month
+      # currmonth = 12
+      # year = 2017
+
       
-      #Right now this method is not that practical. but I would say it is a good start
-      #Creates a new dataframe for month that is within the past 3 month perioud
-      df3 = df[df['time'].str.contains("2017-11")] 
-      df4 = df[df['time'].str.contains("2017-12")]
-      df5 = df[df['time'].str.contains("2018-01")]
+      #The current year 
+      year = datetime.now().year
+
+      #x represents the beginning month within the 3 month period
+      x = currmonth - 3
+      if(x > 0 and x < 10):
+        s = "0"+str(x)
+        df3 = df[df['time'].str.contains(str(year)+"-"+s)]
+      elif(x < 0):
+        x += 12
+        year -= 1
+        df3 = df[df['time'].str.contains(str(year)+"-"+str(x))]
+      else:
+        df3 = df[df['time'].str.contains(str(year)+"-"+str(x))]
+
+
+
+      
+      x += 1
+      #print(x)
+      if(x > 12):
+        x -= 12
+        year += 1
+
+      if(x < 10):
+        s = "0"+str(x)
+        df4 = df[df['time'].str.contains(str(year)+"-"+s)]
+      else:   
+        df4 = df[df['time'].str.contains(str(year)+"-"+str(x))]
+      
+      x +=1
+      #print(x)
+      if(x > 12):
+        x -= 12
+        year += 1
+      if(x < 10):
+            s = "0"+str(x)
+            df5 = df[df['time'].str.contains(str(year)+"-"+s)]
+      else:   
+            df5 = df[df['time'].str.contains(str(year)+"-"+str(x))]
       #creates a list containing these frames
       frames = [df3, df4, df5]
       #Combines the 3 dataframes into one dataframe
       result = pd.concat(frames)
       #Prints it for testing purpoises
       print(result)
+      
 
 
        
