@@ -4,48 +4,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-
-from sklearn import linear_model
-
-#uncomment on Jupyter Notebook
-#from IPython import get_ipython
-#get_ipython().run_line_magic('matplotlib', 'inline')
-
-#90 60
-#60 30
+%matplotlib inline
 
 #Load Data for csv file
 #Use the T-Lines
-def linearRegression(df):
-	n = len(df['time'])
-	X = df['time']
-	Y = df['price_usd']
-	lm = LinearRegression()
-	lm.fit(X,Y)
-	coef90 = lm.coef_
-
-	if n >= 60:	
-		X = X[n-60:]
-		Y = Y[n-60:]
-	lm.fit(X,Y)
-	coef60 = lm.coef_
-
-	if n >= 30:	
-		X = X[n-30:]
-		Y = Y[n-30:]
-	lm.fit(X,Y)
-	coef30 = lm.coef_
-
-	X = X[n-7:]
-	Y = Y[n-7:]
-	lm.fit(X,Y)
-	coef7 = lm.coef_
-
-	if coef90 > 0 and coef60 > 0 and coef30 > 0 and coef7 < 0:
-		return "Dip Buy Potential"
-	if coef90 > 0 and coef60 > 0 and coef30 > 0 and coef7 > 0:
-		return "Potential Future Buy" 
-
 def TlinesAnalysis(df):
 #     TODO LIST
 #     1. Filter and cutdown data Within the past 3 months
@@ -63,32 +25,70 @@ def TlinesAnalysis(df):
 #         Rollover - happen when the price can go over the T-line, high possibility of it will drop
 #         https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
 #         https://blog.quantopian.com/a-professional-quant-equity-workflow/
+    threeMonth = df['time'].iloc[-1] - datetime.timedelta(days=90)
+    df = df[df['time']>threeMonth]
 
+    print(df.describe())
 
+def VolumeAnalyst(df):
+	pricearray = df['price_usd']
+	volumearray = df['volume_usd']
+	positivelist = []
+	negativelist = []
+	sumpositive = 0
+	sumnegative = 0
+	totaloverallsum = 0
+	percentage = 0
+	setpercentage = .50 
+	#For the sake of the testing, we will do up to 20 'datapoints'
+	for x in 20:
+		difference = (pricearray[x+1] - pricearray[x])*volumearray[x]
+		if difference > 0:
+			positivelist.append(difference)
+		elif difference < 0:
+			negativelist.append(difference)	
+    
+    for x in positivelist:
+    	sumpositive += positivelist[x]
+    for x in negativelist:
+    	sumnegative += negativelist[x]
+    totaloverallsum = sumpositive+sumnegative
+    percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
+    if abs(percentage) > setpercentage:
+    	if percentage > 0:
+    		print("A spike has occurred ")
+    	elif percentage:
+    		print("A drop has occured")
+    elif:
+    	print("No drastic spike / drop has occured") 	
 
 
 def EMA8DAY(df):
 	#format the date and calculate the 8 day simple average average
 	fig = plt.figure(figsize=(15,9))
 	ax = fig.add_subplot(1,1,1)
-	short_rolling = df.rolling(window=8).mean()
-	start = df['time'][0]
-	end = df['time'][-1]
 
-	start_date = '2015-01-01' #  #whatever we set it to be
-	end_date = '2016-12-31' #whatever we set it to be
 
-	ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
-	ema_short = df.ewm(span=8, adjust=False).mean()
+    my_year_month_fmt = mdates.DateFormatter('%m/%y')
+    short_rolling = df.rolling(window=8).mean()
+    start = df['time'][0]
+    end = df['time'][-1]
+
+    start_date = '2015-01-01' #  #whatever we set it to be
+    end_date = '2016-12-31' #whatever we set it to be
+
+    ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
+    ema_short = df.ewm(span=8, adjust=False).mean()
 
     #Taking the different between the prices and the EMA timeseries
-	trading_positions_raw = data - ema_short
+    trading_positions_raw = data - ema_short
 
-	ax.plot(data.ix[start_date:end_date, :].index, data.ix[start_date:end_date, 'MSFT'], label='Price')
+    ax.plot(data.ix[start_date:end_date, :].index, data.ix[start_date:end_date, 'MSFT'], label='Price')
 	ax.plot(ema_short.ix[start_date:end_date, :].index, ema_short.ix[start_date:end_date, 'MSFT'], label = 'Span 8-days EMA')
 	ax.legend(loc='best')
 	ax.set_ylabel('Price in $')
 	ax.grid() #set grid
+
 	year_month_format = mdates.DateFormatter('%d/%m/%y')
 
 	ax.xaxis.set_major_fomratter(year_month_format)
@@ -96,23 +96,16 @@ def EMA8DAY(df):
 
 	#When the price timeseries p(t) crosses the EMA timeseries e(t) from above, we will close any existing long position and go short (sell) one unit of the asset.
 
-	#Only Buy when it has a candlestick buy signal and the price close above the t -line
-
-	#Only sell when it has a sell candlestick signal and price price close the t-line
-
-	#Caveats:
-		#higher move away from the t-line the high the possiblities it move away from t-line then look for a sell signal
-
-		#T-line rollover - when a stock is having indecisive trading and can close above the T-Line - time to short if you can, or get out
-
-
-
 	#Custom trading Prediction for 8EMA
 	trading_positions = trading_positions_raw.apply(np.sign) * 1
 	# Lagging our trading signals by one day.
 	trading_positions_final = trading_positions.shift(1)
 
 	#Find the log of the prices is taken and the difference of the consecutive log observations
+	#Predict the price 
+	#Above the Tline -> Sell
+	#Below the Tline -> Buy
+
 	asset_log_returns = np.log(data).diff()
 	strategy_asset_log_returns = trading_positions_final * asset_log_returns
 
