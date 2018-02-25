@@ -5,6 +5,7 @@ import argparse
 import requests
 import time
 from datetime import datetime
+# from datetime import timedelta
 from random import random
 import logging
 import pandas as pd
@@ -16,7 +17,7 @@ import tradingStrategies as trading
 parser = argparse.ArgumentParser(description='Scraping Tokens and Coins')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
                    help='minimum market cap [usd] for currency to be scraped (default: scrape all)')
-parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="3M",
+parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="90D",
                    help='Get data from the request time between the request and the current day. (default 3M) Example: 9D = 9 day from the current time. (D= Day)')
 
 args = parser.parse_args([])
@@ -91,29 +92,73 @@ def LoopandFilterListData(html):
     return data
 
 def filterTimeFrom(df):
-    dataString = args.max_date
-    print(dataString)
-    number = args.max_date[:len(args.max_date)-1]
-    suffix = args.max_date[-1].upper()
-    if number.isdigit(): 
-        number = int(num)
+    # dataString = args.max_date
+    # print(dataString)
+    # number = args.max_date[:len(args.max_date)-1]
+    # suffix = args.max_date[-1].upper()
+    # if number.isdigit(): 
+    #     number = int(number)
+    # else:
+    #     logging.info("invalid max_date")
+    #     sys.exit()
+    # if suffix.isdigit():
+    #     logging.info("invalid max_date")
+    #     sys.exit()
+
+    # if suffix == "D":
+    #     d = timedelta(days=number)
+    # else:
+    #     logging.info("invalid string. Please retry with Y,M,D only.")
+    #     sys.exit()
+
+    # threeMonth = int(df['time'].iloc[-1]) - d
+    # print(threeMonth)
+    # df = df[int(df['time'])>threeMonth]
+
+    # #print(df.describe())
+    currmonth = datetime.now().month
+    year = datetime.now().year
+    x = currmonth - 3
+    if(x > 0 and x < 10):
+        s = "0"+str(x)
+        df3 = df[df['time'].str.contains(str(year)+"-"+s)]
+    elif(x < 0):
+        x += 12
+        year -= 1
+        df3 = df[df['time'].str.contains(str(year)+"-"+str(x))]
     else:
-        logging.info("invalid max_date")
-        sys.exit()
-    if suffix.isdigit()
-        logging.info("invalid max_date")
-        sys.exit()
+        df3 = df[df['time'].str.contains(str(year)+"-"+str(x))]
 
-    if suffix == "D"
-        d = datetime.timedelta(day=number)
+    x+=1
+    if(x>12):
+        x-=12
+        year+=1
+
+    if(x<10):
+        s = "0"+str(x)
+        df4 = df[df['time'].str.contains(str(year)+"-"+s)]
     else:
-        logging.info("invalid string. Please retry with Y,M,D only.")
-        sys.exit()
+        df4 = df[df['time'].str.contains(str(year)+"-"+str(x))]
 
-    threeMonth = df['time'].iloc[-1] - d
-    df = df[df['time']>threeMonth]
+    x+=1
+    if(x>12):
+        x-=12
+        year+=1
+    if(x<10):
+        s = "0"+str(x)
+        df5 = df[df['time'].str.contains(str(year)+"-"+s)]
+    else:
+        df5 = df[df['time'].str.contains(str(year)+"-"+str(x))]
 
-    print(df.describe())
+    frames = [df3,df4,df5]
+    result = pd.concat(frames)
+    df = result
+
+
+
+
+
+    return df
 
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
@@ -153,10 +198,11 @@ def main():
     #print coins
 
 def testing():
+    
     df = pd.read_csv('eos.csv')
 
-    filterTimeFrom(df)
-    #trading.technicalAnalysis(df)
+    df = filterTimeFrom(df)
+    trading.volumeAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)
