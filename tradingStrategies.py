@@ -45,6 +45,10 @@ def linearRegression(df):
 		return "Dip Buy Potential"
 	if coef90 > 0 and coef60 > 0 and coef30 > 0 and coef7 > 0:
 		return "Potential Future Buy" 
+	if coef90 < 0 and coef60 < 0 and coef30 > 0 and coef7 < 0:
+		return "Dip Buy Potential"
+	if coef90 < 0 and coef60 < 0 and coef30 > 0 and coef7 > 0:
+		return "Potential Future Buy" 
 
 def TlinesAnalysis(df):
 #     TODO LIST
@@ -63,6 +67,10 @@ def TlinesAnalysis(df):
 #         Rollover - happen when the price can go over the T-line, high possibility of it will drop
 #         https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
 #         https://blog.quantopian.com/a-professional-quant-equity-workflow/
+
+
+#Add the last comparison, current price and T-Line
+
 
 
 
