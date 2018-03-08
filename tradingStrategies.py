@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-%matplotlib inline
+#%matplotlib inline
 
 #Load Data for csv file
 #Use the T-Lines
@@ -30,60 +30,59 @@ def TlinesAnalysis(df):
 
     print(df.describe())
 
-def VolumeAnalyst(df):
-	pricearray = df['price_usd']
-	volumearray = df['volume_usd']
+def volumeAnalysis(df):
+	
 	positivelist = []
 	negativelist = []
-	sumpositive = 0
-	sumnegative = 0
 	totaloverallsum = 0
-	percentage = 0
+	#set percentage is to determine if the time period of price values is spiking or drop or just a plateau
 	setpercentage = .50 
-	#For the sake of the testing, we will do up to 20 'datapoints'
-	for x in 20:
-		difference = (pricearray[x+1] - pricearray[x])*volumearray[x]
+	# For the sake of the testing, we will do up to 20 'datapoints'
+	for x in range(0,20):
+		difference = (float(df.iloc[x+1]['price_usd']) - float(df.iloc[x]['price_usd']))*float(df.iloc[x]['volume_usd'])
+		
+
 		if difference > 0:
 			positivelist.append(difference)
 		elif difference < 0:
-			negativelist.append(difference)	
-    
-    for x in positivelist:
-    	sumpositive += positivelist[x]
-    for x in negativelist:
-    	sumnegative += negativelist[x]
-    totaloverallsum = sumpositive+sumnegative
-    percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
-    if abs(percentage) > setpercentage:
-    	if percentage > 0:
-    		print("A spike has occurred ")
-    	elif percentage:
-    		print("A drop has occured")
-    elif:
-    	print("No drastic spike / drop has occured") 	
+			negativelist.append(difference)
+	
+	#cool way to calculate the sum of the positve and negative lists respectively
+	sumpositive = sum(map(float,positivelist))
+	sumnegative = sum(map(float,negativelist))
+	
+
+	totaloverallsum = sumpositive+sumnegative
+	percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
+	if abs(percentage) > setpercentage:
+		if percentage > 0:
+			print("A spike has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time'])
+
+		elif percentage < 0:
+			print("A drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time'])
+	else:
+		print("No drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time']) 
+
+ 
 
 
 def EMA8DAY(df):
 	#format the date and calculate the 8 day simple average average
 	fig = plt.figure(figsize=(15,9))
 	ax = fig.add_subplot(1,1,1)
-
-
-    my_year_month_fmt = mdates.DateFormatter('%m/%y')
-    short_rolling = df.rolling(window=8).mean()
-    start = df['time'][0]
-    end = df['time'][-1]
-
-    start_date = '2015-01-01' #  #whatever we set it to be
-    end_date = '2016-12-31' #whatever we set it to be
-
-    ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
-    ema_short = df.ewm(span=8, adjust=False).mean()
+	my_year_month_fmt = mdates.DateFormatter('%m/%y')
+	short_rolling = df.rolling(window=8).mean()
+	start = df['time'][0]
+	end = df['time'][-1]
+	start_date = '2015-01-01' #  #whatever we set it to be
+	end_date = '2016-12-31' #whatever we set it to be
+	ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
+	ema_short = df.ewm(span=8, adjust=False).mean()
 
     #Taking the different between the prices and the EMA timeseries
-    trading_positions_raw = data - ema_short
+	trading_positions_raw = data - ema_short
 
-    ax.plot(data.ix[start_date:end_date, :].index, data.ix[start_date:end_date, 'MSFT'], label='Price')
+	ax.plot(data.ix[start_date:end_date, :].index, data.ix[start_date:end_date, 'MSFT'], label='Price')
 	ax.plot(ema_short.ix[start_date:end_date, :].index, ema_short.ix[start_date:end_date, 'MSFT'], label = 'Span 8-days EMA')
 	ax.legend(loc='best')
 	ax.set_ylabel('Price in $')
