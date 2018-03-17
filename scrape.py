@@ -102,6 +102,7 @@ def filterTimeFrom(df):
     d = datetime.timedelta(days=number).total_seconds()*1000
     threeMonth = df['time'].iloc[-1] - d
     df = df[df['time']>threeMonth]
+    return df
 
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
@@ -141,10 +142,11 @@ def main():
     #print coins
 
 def testing():
+    
     df = pd.read_csv('eos.csv')
 
-    filterTimeFrom(df)
-    #trading.technicalAnalysis(df)
+    df = filterTimeFrom(df)
+    trading.volumeAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)

@@ -31,6 +31,7 @@ def TlinesAnalysis(df):
 
 	print(df.describe())
 
+
 def volumeAnalysis(df):
 	
 	positivelist = []
@@ -62,15 +63,14 @@ def volumeAnalysis(df):
 		elif percentage < 0:
 			print("A drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time'])
 	else:
-		print("No drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time']) 	
+		print("No drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time']) 
+
 
 
 def EMA8DAY(df):
 	#format the date and calculate the 8 day simple average average
 	fig = plt.figure(figsize=(15,9))
 	ax = fig.add_subplot(1,1,1)
-
-
 	my_year_month_fmt = mdates.DateFormatter('%m/%y')
 	short_rolling = df.rolling(window=8).mean()
 	start = df['time'][0]
@@ -78,7 +78,6 @@ def EMA8DAY(df):
 
 	start_date = '2015-01-01' #  #whatever we set it to be
 	end_date = '2016-12-31' #whatever we set it to be
-
 	ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
 	ema_short = df.ewm(span=8, adjust=False).mean()
 
