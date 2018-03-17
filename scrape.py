@@ -4,7 +4,7 @@ import os
 import argparse
 import requests
 import time
-from datetime import datetime
+import datetime
 from random import random
 import logging
 import pandas as pd
@@ -16,8 +16,8 @@ import tradingStrategies as trading
 parser = argparse.ArgumentParser(description='Scraping Tokens and Coins')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
                    help='minimum market cap [usd] for currency to be scraped (default: scrape all)')
-parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="3M",
-                   help='Get data from the request time between the request and the current day. (default 3M) Example: 9D = 9 day from the current time. (D= Day)')
+parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="90",
+                   help='Get data from the request time between the request and the current day. (default 90) Example: 90 day from the current time. (D= Day)')
 
 args = parser.parse_args([])
 
@@ -92,33 +92,21 @@ def LoopandFilterListData(html):
 
 def filterTimeFrom(df):
     dataString = args.max_date
-    print(dataString)
-    number = args.max_date[:len(args.max_date)-1]
-    suffix = args.max_date[-1].upper()
+    number = args.max_date
+
     if number.isdigit(): 
-        number = int(num)
+        number = int(number)
     else:
         logging.info("invalid max_date")
         sys.exit()
-    if suffix.isdigit()
-        logging.info("invalid max_date")
-        sys.exit()
-
-    if suffix == "D"
-        d = datetime.timedelta(day=number)
-    else:
-        logging.info("invalid string. Please retry with Y,M,D only.")
-        sys.exit()
-
+    d = datetime.timedelta(days=number).total_seconds()*1000
     threeMonth = df['time'].iloc[-1] - d
     df = df[df['time']>threeMonth]
-
-    print(df.describe())
 
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
     rawData = pd.read_json(URL)
-    #rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
+    #rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
     rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[0])
     rawData['market_cap_by_available_supply'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[1])
     rawData['price_btc'] = rawData['price_btc'].apply(lambda x: x[1])
