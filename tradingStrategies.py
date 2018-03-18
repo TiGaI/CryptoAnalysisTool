@@ -58,12 +58,12 @@ def volumeAnalysis(df):
 	percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
 	if abs(percentage) > setpercentage:
 		if percentage > 0:
-			print("A spike has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time'])
+			print("A spike has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
 
 		elif percentage < 0:
-			print("A drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time'])
+			print("A drop has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
 	else:
-		print("No drop has occured from " + df.iloc[0]['time'] + " to " + df.iloc[20]['time']) 
+		print("A drop has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
 
 
 
