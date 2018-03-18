@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 import pandas as pd
 import numpy as np
@@ -15,11 +15,14 @@ def TlinesAnalysis(df):
 #	 Analysis the trendline Linear Regression
 #	 Compare the peaks and High highs and low lows
 #	 The total volumn between spikes
-#	 Swing Trading Points
-#		 Always enter a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
-#		 Always align your trade with the overall direction of the market.
-#		 focus on the 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
-#		 look for volume dries up at lows
+#	 Swing Trading Po
+#		 Always enter
+#		 Always align
+#		 focus on the
+#		 look for volume dries up at lowsints
+ # a trade with a clear trading plan, the four key elements of which are a target, a limit, a stop loss and an add-on point.
+ # your trade with the overall direction of the market.
+ # 6-month daily chart. Here, I can see finer details that the weekly chart obscures.
 #		 Dont get caught up in the coin or company. 
 #		 Use a T-Line trading strategy. -8-day exponential moving average
 #		 the farther away from the T-line, the high the possible of it going back to the T-Line
@@ -28,43 +31,52 @@ def TlinesAnalysis(df):
 #		 https://blog.quantopian.com/a-professional-quant-equity-workflow/
 	threeMonth = df['time'].iloc[-1] - datetime.timedelta(days=90)
 	df = df[df['time']>threeMonth]
-
+     
 	print(df.describe())
 
 
 def volumeAnalysis(df):
-	
+	print(df)
 	positivelist = []
 	negativelist = []
 	totaloverallsum = 0
+	a = 0
+	b = 10
+	c = len(df.index)
 	#set percentage is to determine if the time period of price values is spiking or drop or just a plateau
-	setpercentage = .50 
+	setpercentage =  0.50
 	# For the sake of the testing, we will do up to 20 'datapoints'
-	for x in range(0,20):
-		difference = (float(df.iloc[x+1]['price_usd']) - float(df.iloc[x]['price_usd']))*float(df.iloc[x]['volume_usd'])
-		
 
+	#print(c)
+	for x in range(0,c-1):
+		difference = (float(df.iloc[x+1]['price_usd']) - float(df.iloc[x]['price_usd']))*float(df.iloc[x]['volume_usd'])
 		if difference > 0:
 			positivelist.append(difference)
 		elif difference < 0:
 			negativelist.append(difference)
+		#way to calculate the sum of the positve and negative lists respectively
+		
+		#For every 5 dataset, we calculate the 
+		if(x % 5 == 0):
+			sumpositive = sum(map(float,positivelist))
+			sumnegative = sum(map(float,negativelist))
+			totaloverallsum = sumpositive+sumnegative
+			percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
+
+			if abs(percentage) > setpercentage:
+				if percentage > 0:
+					
+					print("A spike has occured from " + datetime.datetime.utcfromtimestamp((df.iloc[x-5]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S') + " to " + datetime.datetime.utcfromtimestamp((df.iloc[x]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S'))
 	
-	#cool way to calculate the sum of the positve and negative lists respectively
-	sumpositive = sum(map(float,positivelist))
-	sumnegative = sum(map(float,negativelist))
-	
+				elif percentage < 0:
+					print("A drop has occured from " + datetime.datetime.utcfromtimestamp((df.iloc[x-5]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S') + " to " + datetime.datetime.utcfromtimestamp((df.iloc[x]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S'))
 
-	totaloverallsum = sumpositive+sumnegative
-	percentage = ((sumpositive - sumnegative) / totaloverallsum) * 100
-	if abs(percentage) > setpercentage:
-		if percentage > 0:
-			print("A spike has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
+			else:
+				print("No drop has occured from " + datetime.datetime.utcfromtimestamp((df.iloc[x-5]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S') + " to " + datetime.datetime.utcfromtimestamp((df.iloc[x]['time']/1000)).strftime('%Y-%m-%d %H:%M:%S')) 
 
-		elif percentage < 0:
-			print("A drop has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
-	else:
-		print("A drop has occured from " + str(df.iloc[0]['time']) + " to " + str(df.iloc[20]['time']))
 
+			
+				
 
 
 def EMA8DAY(df):
