@@ -1,7 +1,8 @@
-from datetime import datetime
+import datetime
 
 import pandas as pd
 import numpy as np
+from scipy.interpolate import spline
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 # %matplotlib
@@ -26,7 +27,7 @@ def TlinesAnalysis(df):
 #		 Rollover - happen when the price can go over the T-line, high possibility of it will drop
 #		 https://www.investopedia.com/ask/answers/122314/what-exponential-moving-average-ema-formula-and-how-ema-calculated.asp
 #		 https://blog.quantopian.com/a-professional-quant-equity-workflow/
-	threeMonth = df['time'].iloc[-1] - datetime.timedelta(days=90)
+	threeMonth = df['time'].iloc[-1] - datetime.datetime.timedelta(days=90)
 	df = df[df['time']>threeMonth]
 
 	print(df.describe())
@@ -72,57 +73,59 @@ def EMA8DAY(df):
 	fig = plt.figure(figsize=(15,9))
 	ax = fig.add_subplot(1,1,1)
 	my_year_month_fmt = mdates.DateFormatter('%m/%y')
-	short_rolling = df.rolling(window=8).mean()
-	start = df['time'][0]
-	end = df['time'][-1]
+	#df['time'] = df['time'].apply(lambda x: datetime.datetime.utcfromtimestamp(float(x/1000)).strftime('%Y-%m-%d'))
+	df['time'] = df['time'].apply(lambda x: int(x/1000))
+	short_rolling = df[['time', 'price_usd']].rolling(window=8).mean()
 
-	start_date = '2015-01-01' #  #whatever we set it to be
-	end_date = '2016-12-31' #whatever we set it to be
-	ax.plot(short_rolling.ix[start_date:end_date, :].index, short_rolling.ix[start_date:end_date, 'MSFT'], label = '8-days SMA')
+	ax.plot(df['time'], df['price_usd'], label='Price')
+	ax.plot(short_rolling['time'], short_rolling['price_usd'], label = '8-days SMA')
+	
 	ema_short = df.ewm(span=8, adjust=False).mean()
 
 	#Taking the different between the prices and the EMA timeseries
-	trading_positions_raw = data - ema_short
+	#trading_positions_raw = df - ema_short
 
-	ax.plot(data.ix[start_date:end_date, :].index, data.ix[start_date:end_date, 'MSFT'], label='Price')
-	ax.plot(ema_short.ix[start_date:end_date, :].index, ema_short.ix[start_date:end_date, 'MSFT'], label = 'Span 8-days EMA')
+
+	ax.plot(ema_short['time'], ema_short['price_usd'], label = 'Span 8-days EMA')
+
 	ax.legend(loc='best')
 	ax.set_ylabel('Price in $')
 	ax.grid() #set grid
+	ax.xaxis_date()
+	ax.xaxis.set_major_formatter(my_year_month_fmt)
+	fig.autofmt_xdate()
+	plt.show()
+	# ax.xaxis.set_major_fomratter(year_month_format)
+	# #When the price timeseries p(t) crosses the EMA timeseries e(t) from below, we will close any existing short position and go long (buy) one unit of the asset.
 
-	year_month_format = mdates.DateFormatter('%d/%m/%y')
+	# #When the price timeseries p(t) crosses the EMA timeseries e(t) from above, we will close any existing long position and go short (sell) one unit of the asset.
 
-	ax.xaxis.set_major_fomratter(year_month_format)
-	#When the price timeseries p(t) crosses the EMA timeseries e(t) from below, we will close any existing short position and go long (buy) one unit of the asset.
+	# #Custom trading Prediction for 8EMA
+	# trading_positions = trading_positions_raw.apply(np.sign) * 1
+	# # Lagging our trading signals by one day.
+	# trading_positions_final = trading_positions.shift(1)
 
-	#When the price timeseries p(t) crosses the EMA timeseries e(t) from above, we will close any existing long position and go short (sell) one unit of the asset.
+	# #Find the log of the prices is taken and the difference of the consecutive log observations
+	# #Predict the price 
+	# #Above the Tline -> Sell
+	# #Below the Tline -> Buy
 
-	#Custom trading Prediction for 8EMA
-	trading_positions = trading_positions_raw.apply(np.sign) * 1
-	# Lagging our trading signals by one day.
-	trading_positions_final = trading_positions.shift(1)
+	# asset_log_returns = np.log(data).diff()
+	# strategy_asset_log_returns = trading_positions_final * asset_log_returns
 
-	#Find the log of the prices is taken and the difference of the consecutive log observations
-	#Predict the price 
-	#Above the Tline -> Sell
-	#Below the Tline -> Buy
+	# # Get the cumulative log-returns per asset
+	# cum_strategy_asset_log_returns = strategy_asset_log_returns.cumsum()
+	# # Transform the cumulative log returns to relative returns
+	# cum_strategy_asset_relative_returns = np.exp(cum_strategy_asset_log_returns) - 1
+	# # Taking the sum of the all of the returns
+	# cum_relative_return_exact = cum_strategy_asset_relative_returns.sum(axis=1)
 
-	asset_log_returns = np.log(data).diff()
-	strategy_asset_log_returns = trading_positions_final * asset_log_returns
-
-	# Get the cumulative log-returns per asset
-	cum_strategy_asset_log_returns = strategy_asset_log_returns.cumsum()
-	# Transform the cumulative log returns to relative returns
-	cum_strategy_asset_relative_returns = np.exp(cum_strategy_asset_log_returns) - 1
-	# Taking the sum of the all of the returns
-	cum_relative_return_exact = cum_strategy_asset_relative_returns.sum(axis=1)
-
-	ax.plot(cum_relative_return_exact.index, 100*cum_relative_return_exact, label='EMA strategy')
-	ax.set_ylabel('Total cumulative relative returns (%)')
-	ax.legend(loc='best')
-	ax.set_ylabel('Price in $')
-	ax.grid() #set grid
-	ax.xaxis.set_major_fomratter(year_month_format)
+	# ax.plot(cum_relative_return_exact.index, 100*cum_relative_return_exact, label='EMA strategy')
+	# ax.set_ylabel('Total cumulative relative returns (%)')
+	# ax.legend(loc='best')
+	# ax.set_ylabel('Price in $')
+	# ax.grid() #set grid
+	# ax.xaxis.set_major_fomratter(year_month_format)
 
 #Basic strategies to compare to.
 def BuyAndHoldStrategy(df):

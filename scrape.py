@@ -146,7 +146,8 @@ def testing():
     df = pd.read_csv('eos.csv')
 
     df = filterTimeFrom(df)
-    trading.volumeAnalysis(df)
+    #trading.volumeAnalysis(df)
+    trading.EMA8DAY(df)
 
 #def main():
     # d = get_historical_data(COIN)
