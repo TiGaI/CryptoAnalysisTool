@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+import sys
+import os
 import argparse
 import requests
 import time
-from datetime import datetime
+import datetime
 from random import random
 import logging
 import pandas as pd
@@ -14,8 +16,10 @@ import tradingStrategies as trading
 parser = argparse.ArgumentParser(description='Scraping Tokens and Coins')
 parser.add_argument('min_market_cap', metavar='min_cap', type=int, nargs='?', default=0,
                    help='minimum market cap [usd] for currency to be scraped (default: scrape all)')
+parser.add_argument('max_date', metavar='max_date', type=str, nargs='?', default="90",
+                   help='Get data from the request time between the request and the current day. (default 90) Example: 90 day from the current time. (D= Day)')
 
-args = parser.parse_args()
+args = parser.parse_args([])
 
 # Configuration
 timestamp_0 = 1367174841000
@@ -86,10 +90,24 @@ def LoopandFilterListData(html):
             data.append(datum)
     return data
 
+def filterTimeFrom(df):
+    dataString = args.max_date
+    number = args.max_date
+
+    if number.isdigit(): 
+        number = int(number)
+    else:
+        logging.info("invalid max_date")
+        sys.exit()
+    d = datetime.timedelta(days=number).total_seconds()*1000
+    threeMonth = df['time'].iloc[-1] - d
+    df = df[df['time']>threeMonth]
+    return df
+
 def getDetailandGraphData(token):
     URL = "{0}/currencies/{1}/".format(graphBASE_URL, token['slug'])
     rawData = pd.read_json(URL)
-    #rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
+    #rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: datetime.datetime.utcfromtimestamp(float(x[0]/1000)).strftime('%Y-%m-%d %H:%M:%S')) #convert UNIX TIMEstamp into readable data
     rawData['time'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[0])
     rawData['market_cap_by_available_supply'] = rawData['market_cap_by_available_supply'].apply(lambda x: x[1])
     rawData['price_btc'] = rawData['price_btc'].apply(lambda x: x[1])
@@ -99,7 +117,7 @@ def getDetailandGraphData(token):
     rawData.to_csv("{0}.csv".format(token['slug']), sep=',',index=False)
     return rawData
 
-     
+    
 def main():
     ##logging.info("Attempting to scrape token list.")
     tokens = scrapeTokenList()
@@ -108,6 +126,8 @@ def main():
     for token in tokens:
         logging.info("> Starting scrape of token {0}...".format(token['slug']))
         df = getDetailandGraphData(token)
+        df = filterTimeFrom(df)
+        
         #TechnicalAnalysis(df)
 
     #rawData.to_csv("testing2.csv", sep=',',index=False)
@@ -122,8 +142,11 @@ def main():
     #print coins
 
 def testing():
+    
     df = pd.read_csv('eos.csv')
-    trading.technicalAnalysis(df)
+
+    df = filterTimeFrom(df)
+    trading.volumeAnalysis(df)
 
 #def main():
     # d = get_historical_data(COIN)

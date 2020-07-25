@@ -3,16 +3,19 @@ import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from secret_settings import *
+import json
+import datetime as dt
+import time
+import os
+import sys
  
 class TwitterClient(object):
     def __init__(self):
-
         # keys and tokens from the Twitter Dev Console
-        consumer_key = CONSUMER_KEY
-        consumer_secret = CONSUMER_SECRET
-        access_token = ACCESS_TOKEN
-        access_token_secret = ACCESS_TOKEN_SECRET
- 
+        consumer_key = os.environ['CONSUMER_KEY']
+        consumer_secret = os.environ['CONSUMER_SECRET']
+        access_token = os.environ['ACCESS_TOKEN']
+        access_token_secret = os.environ['ACCESS_TOKEN_SECRET']
         # attempt authentication
         try:
             # create OAuthHandler object
@@ -81,12 +84,68 @@ class TwitterClient(object):
         except tweepy.TweepError as e:
             # print error (if any)
             print("Error : " + str(e))
+
+def tweet_search(api, query, max_tweets, max_id, since_id, geocode='39.8,-95.583068847656,2500km'):
+    ''' Function that takes in a search string 'query', the maximum
+        number of tweets 'max_tweets', and the minimum (i.e., starting)
+        tweet id. It returns a list of tweepy.models.Status objects. '''
  
-def main():
+    searched_tweets = []
+    while len(searched_tweets) &amp;lt; max_tweets:
+        remaining_tweets = max_tweets - len(searched_tweets)
+        try:
+            new_tweets = api.search(q=query, count=remaining_tweets,
+                                    since_id=str(since_id),
+                                    max_id=str(max_id-1))
+#                                    geocode=geocode)
+            print('found',len(new_tweets),'tweets')
+            if not new_tweets:
+                print('no tweets found')
+                break
+            searched_tweets.extend(new_tweets)
+            max_id = new_tweets[-1].id
+            except tweepy.TweepError:
+            print('exception raised, waiting 15 minutes')
+            print('(until:', dt.datetime.now()+dt.timedelta(minutes=15), ')')
+            time.sleep(15*60)
+            break # stop the loop
+    return searched_tweets, max_id            
+
+def get_tweet_id(api, date='', days_ago=9, query='a'):
+    ''' Function that gets the ID of a tweet. This ID can
+        then be used as a 'starting point' from which to
+        search. The query is required and has been set to
+        a commonly used word by default. The variable
+        'days_ago' has been initialized to the maximum amount
+        we are able to search back in time (9).'''
+ 
+    if date: # return an ID from the start of the given day
+        td = date + dt.timedelta(days=1)
+        tweet_date = '{0}-{1:0&amp;gt;2}-{2:0&amp;gt;2}'.format(td.year, td.month, td.day)
+        tweet = api.search(q=query, count=1, until=tweet_date)
+    else:
+        # return an ID from __ days ago
+        td = dt.datetime.now() - dt.timedelta(days=days_ago)
+        tweet_date = '{0}-{1:0&amp;gt;2}-{2:0&amp;gt;2}'.format(td.year, td.month, td.day)
+        # get list of up to 10 tweets
+        tweet = api.search(q=query, count=10, until=tweet_date)
+        print('search limit (start/stop):',tweet[0].created_at)
+        # return the id of the first tweet in the list
+        return tweet[0].id
+
+def sentimentAnalysis(slug):
     # creating object of TwitterClient Class
     api = TwitterClient()
     # calling function to get tweets
     #name of the coins
+    search_name = slug
+    time_limit = 24 # runtime limit in hours
+    min_days_old, max_days_old = 1, 2 # search limits
+     
+    # e.g. min_days_old, max_days_old = 7, 8
+    # gives the current weekday from last week,
+    # min_days_old=0 will search from right now
+
     tweets = api.get_tweets(query = "XLM" , count = 200)
  
     # picking positive tweets from tweets
@@ -112,5 +171,4 @@ def main():
         print(tweet['text'])
  
 if __name__ == "__main__":
-    # calling main function
-    main()
+    sentimentAnalysis()
